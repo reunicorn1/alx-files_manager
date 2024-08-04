@@ -26,7 +26,7 @@ class RedisClient {
 
   // isAlive function
   isAlive() {
-    return this.client.alive
+    return this.alive
   }
 
   // The getter method of values in redis
