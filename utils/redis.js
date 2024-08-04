@@ -31,16 +31,16 @@ class RedisClient {
 
   // The getter method of values in redis
   async get(key) {
+    if (!this.alive) await this.client.connect()
+
     return this.client.get(key)
   }
 
   // The setter with an expiration method in redis
   async set(key, value, duration) {
-    if (typeof duration !== 'number') {
-      throw new Error('Duration must be a number')
-    }
-    await this.client.setEx(key, duration, value)
+    this.client.setEx(key, duration, value)
   }
+
   // The delete method of redis
   async del(key) {
     await this.client.del(key)

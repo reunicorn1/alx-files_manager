@@ -130,5 +130,7 @@ dist
 .pnp.*
 
 bun.lockb
+.vscode
+
 
 exp/
