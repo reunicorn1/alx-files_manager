@@ -1,52 +1,48 @@
-import { createClient } from 'redis'
-import { promisify } from 'util'
-
+const redis = require('redis');
+const util = require('util');
 
 class RedisClient {
   // The constructor
   constructor() {
-    this.client = createClient({
+    this.client = redis.createClient({
       socket: {
         host: '127.0.0.1',
         port: 6379,
       },
-    }).on('error', (err) =>
-      console.log('Redis client not connected to the server: ', err)
-    )
-    this.alive = true // This variable is used with event listeners to indicate live access
-
+    }).on('error', (err) => console.log('Redis client not connected to the server: ', err));
+    this.alive = true; // This variable is used with event listeners to indicate live access
     this.client.on('connect', () => {
-      this.alive = true
-    })
+      this.alive = true;
+    });
   }
 
   // isAlive function
   isAlive() {
-    return this.alive
+    return this.alive;
   }
 
   // The getter method of values in redis
   async get(key) {
-	const promise_get = promisify(this.client.get.bind(this.client))
-	return await promise_get(key)
+    const get = util.promisify(this.client.get.bind(this.client));
+    const ans = await get(key);
+    return ans;
   }
 
   // The setter with an expiration method in redis
   async set(key, value, duration) {
     if (typeof duration !== 'number') {
-      throw new Error('Duration must be a number')
+      throw new Error('Duration must be a number');
     }
-	const promise_setex = promisify(this.client.setex.bind(this.client))
-    await promise_setex(String(key), duration, String(value))
+    const setex = util.promisify(this.client.setex.bind(this.client));
+    await setex(String(key), duration, String(value));
   }
-
 
   // The delete method of redis
   async del(key) {
-	const promise_del = promisify(this.client.del.bind(this.client));
-    await promise_del(key);
+    const del = util.promisify(this.client.del.bind(this.client));
+    await del(key);
   }
 }
 
-const redisClient = new RedisClient()
-export default redisClient
+const redisClient = new RedisClient();
+export default redisClient;
