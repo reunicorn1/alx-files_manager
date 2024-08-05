@@ -4,23 +4,24 @@ import dbClient from '../utils/db';
 /**
  * Class for controlling basic operations of the app
  */
-const AppController = {
+class AppController {
   /**
    * Checks if connection to MongoDB and Redis is Alive
    * @return {undefined}
    */
-  getStatus(req, res) {
+  static getStatus(req, res) {
     res.status(200).json({ redis: redisClient.isAlive(), db: dbClient.isAlive() });
-  },
+  }
 
   /**
    * Checks number of documents in the collection users and files
    * @return {undefined}
    */
-  async getStats(req, res) {
-    res.status(200).json({ users: await dbClient.nbUsers(), files: await dbClient.nbFiles() });
-  },
-
-};
+  static getStats(req, res) {
+    Promise.all([dbClient.nbUsers(), dbClient.nbFiles()]).then(([usercount, filecount]) => {
+      res.status(200).json({ users: usercount, files: filecount });
+    });
+  }
+}
 
 export default AppController;
