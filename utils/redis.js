@@ -30,9 +30,6 @@ class RedisClient {
 
   // The setter with an expiration method in redis
   async set(key, value, duration) {
-    if (typeof duration !== 'number') {
-      throw new Error('Duration must be a number');
-    }
     const setex = util.promisify(this.client.setex.bind(this.client));
     await setex(String(key), duration, String(value));
   }
