@@ -134,3 +134,5 @@ bun.lockb
 
 
 exp/
+
+*main.js

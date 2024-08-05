@@ -1,6 +1,5 @@
-const redis = require('redis');
-const util = require('util');
-
+import redis from 'redis';
+import util from 'util';
 class RedisClient {
   // The constructor
   constructor() {
@@ -9,7 +8,10 @@ class RedisClient {
         host: '127.0.0.1',
         port: 6379,
       },
-    }).on('error', (err) => console.log('Redis client not connected to the server: ', err));
+    }).on('error', (err) => {
+		console.log('Redis client not connected to the server:', err);
+		this.alive = false;
+	});
     this.alive = true; // This variable is used with event listeners to indicate live access
     this.client.on('connect', () => {
       this.alive = true;
@@ -36,7 +38,7 @@ class RedisClient {
 
   // The delete method of redis
   async del(key) {
-    const del = util.promisify(this.client.del.bind(this.client));
+    const del = util.promisify(this.client.DEL.bind(this.client));
     await del(key);
   }
 }
