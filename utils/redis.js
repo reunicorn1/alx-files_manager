@@ -40,6 +40,7 @@ class RedisClient {
     await promise_setex(String(key), duration, String(value))
   }
 
+
   // The delete method of redis
   async del(key) {
 	const promise_del = promisify(this.client.del.bind(this.client));
