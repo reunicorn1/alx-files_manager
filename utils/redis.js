@@ -1,5 +1,6 @@
 import redis from 'redis';
 import util from 'util';
+
 class RedisClient {
   // The constructor
   constructor() {
@@ -9,9 +10,9 @@ class RedisClient {
         port: 6379,
       },
     }).on('error', (err) => {
-		console.log('Redis client not connected to the server:', err);
-		this.alive = false;
-	});
+      console.log('Redis client not connected to the server:', err);
+      this.alive = false;
+    });
     this.alive = true; // This variable is used with event listeners to indicate live access
     this.client.on('connect', () => {
       this.alive = true;
