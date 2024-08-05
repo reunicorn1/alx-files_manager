@@ -1,4 +1,6 @@
 import { createClient } from 'redis'
+import { promisify } from 'util'
+
 
 class RedisClient {
   // The constructor
@@ -11,17 +13,11 @@ class RedisClient {
     }).on('error', (err) =>
       console.log('Redis client not connected to the server: ', err)
     )
-    this.alive = false // This variable is used with event listeners to indicate live access
+    this.alive = true // This variable is used with event listeners to indicate live access
 
     this.client.on('connect', () => {
       this.alive = true
-      console.log('Redis client connected to the server')
     })
-  }
-
-  // The init function is created to seperate the connection to the redis server
-  async init() {
-    await this.client.connect()
   }
 
   // isAlive function
@@ -31,7 +27,8 @@ class RedisClient {
 
   // The getter method of values in redis
   async get(key) {
-    return this.client.get(key)
+	const promise_get = promisify(this.client.get.bind(this.client))
+	return await promise_get(key)
   }
 
   // The setter with an expiration method in redis
@@ -39,11 +36,14 @@ class RedisClient {
     if (typeof duration !== 'number') {
       throw new Error('Duration must be a number')
     }
-    await this.client.setEx(key, duration, value)
+	const promise_setex = promisify(this.client.setex.bind(this.client))
+    await promise_setex(String(key), duration, String(value))
   }
+
   // The delete method of redis
   async del(key) {
-    await this.client.del(key)
+	const promise_del = promisify(this.client.del.bind(this.client));
+    await promise_del(key);
   }
 }
 
