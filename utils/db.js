@@ -18,7 +18,7 @@ class DBClient {
 
   async connect() {
     try {
-      const client = await MongoClient.connect(url);
+      const client = await MongoClient.connect(url, { useUnifiedTopology: true });
       this.db = client.db(DB_DATABASE);
       this.usersCollection = this.db.collection('users');
       this.filesCollection = this.db.collection('files');
