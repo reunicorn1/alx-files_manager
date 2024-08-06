@@ -1,9 +1,4 @@
-import crypto from 'crypto';
-import pkg from 'mongodb';
 import dbClient from '../utils/db';
-import redisClient from '../utils/redis';
-
-const { ObjectId } = pkg;
 
 /**
  * Class for controlling basic operations related to the user
@@ -33,15 +28,8 @@ class UsersController {
    * @return {Object} a response json object
    */
   static async getMe(req, res) {
-    // Look for the user
-    const token = req.headers['x-token'];
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
-    // Get the user id who's signed in associated with the token
-    const userid = await redisClient.get(`auth_${token}`);
-
-    if (!userid) return res.status(401).json({ error: 'Unauthorized' });
-    const user = await dbClient.usersCollection.findOne({ _id: new ObjectId(userid) });
-    return res.status(401).json({ id: user._id, email: user.email });
+    // All checks necessary were made already in the middleware
+    return res.status(401).json({ id: req.user._id.toString(), email: req.user.email });
   }
 }
 
