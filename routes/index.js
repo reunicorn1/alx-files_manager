@@ -1,6 +1,6 @@
 /* eslint-disable jest/require-hook */
 import { Router } from 'express';
-import AppController from '../controllers/AppController';
+import AppController from '../controllers/AppController.js';
 
 const router = Router();
 
