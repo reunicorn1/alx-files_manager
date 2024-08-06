@@ -8,6 +8,7 @@ import FilesController from '../controllers/FilesController';
 const router = Router();
 
 // GET /status => AppController.getStatus
+// eslint-disable-next-line jest/require-hook
 router.route('/status')
   .get((req, res) => {
     AppController.getStatus(req, res);
