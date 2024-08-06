@@ -12,7 +12,11 @@ class AuthController {
    * @return {Object} a response json object
    */
   static async getConnect(req, res) {
-    const encypted = Buffer.from(req.headers.authorization.split(' ')[1], 'base64').toString('utf-8');
+    const base64 = req.headers.authorization;
+    if (!base64) return res.status(401).json({ error: 'Unauthorized' });
+
+    const encypted = Buffer.from(base64.split(' ')[1], 'base64').toString('utf-8');
+    // Get data stored in the decoded string
     const [email, password] = encypted.split(':');
     const hashedpwd = crypto.createHash('sha1').update(password).digest('hex');
 
@@ -31,9 +35,11 @@ class AuthController {
   static async getDisconnect(req, res) {
     // Find the user associated with the toke
     const token = req.headers['x-token'];
-    const result = await redisClient.get(`auth_${token}`);
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    // Get the user signed in the session using the token from redis
+    const user = await redisClient.get(`auth_${token}`);
 
-    if (!result) return res.status(401).json({ error: 'Unauthorized' });
+    if (!user) return res.status(401).json({ error: 'Unauthorized' });
     await redisClient.del(`auth_${token}`);
     return res.status(204).end();
   }
