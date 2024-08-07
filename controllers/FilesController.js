@@ -28,7 +28,7 @@ class FilesController {
    */
   static async postUpload(req, res) {
     const {
-      name, type, parentId = 0, isPublic = false, data,
+      name, type, parentId = '0', isPublic = false, data,
     } = req.body;
 
     // Double checks for the presence of required parameters
@@ -60,6 +60,34 @@ class FilesController {
     });
     const { ops: [{ _id, localPath, ...rest }] } = result;
     return res.status(201).json({ id: _id, ...rest });
+  }
+
+  static async getShow(req, res) {
+    const { id } = req.params;
+    const file = await dbClient.filesCollection.findOne({
+      userId: req.user._id.toString(),
+      _id: new ObjectId(id),
+    });
+    if (!file) return res.status(404).json({ error: 'Not found' });
+    const { _id, localPath, ...rest } = file;
+    return res.status(201).json({ id: _id, ...rest });
+  }
+
+  static async getIndex(req, res) {
+    const pageSize = 10;
+    const { parentId = '0', page = 0 } = req.query;
+    const pipeline = [
+      { $match: { parentId, userId: req.user._id.toString() } },
+      { $skip: page * pageSize },
+      { $limit: pageSize },
+    ];
+    dbClient.filesCollection.aggregate(pipeline).toArray((err, result) => {
+      if (err) console.log(err);
+      return res.status(201).json(result.map((r) => {
+        const { _id, localPath, ...rest } = r;
+        return { id: _id, ...rest };
+      }));
+    });
   }
 }
 

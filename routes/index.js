@@ -40,4 +40,10 @@ router.get('/disconnect', getUserX, AuthController.getDisconnect);
 // GET /users/me => UserController.getMe~
 router.get('/users/me', getUserX, UsersController.getMe);
 
+// GET /files/:id => FilesController.getShow
+router.get('/files/:id', getUserX, FilesController.getShow);
+
+// GET /files => FilesController.getIndex
+router.get('/files', getUserX, FilesController.getIndex);
+
 export default router;
