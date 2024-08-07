@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'node:fs';
-import mongoDBCore from 'mongodb/lib/core/index.js';
-import dbClient from '../utils/db.js';
+import mongoDBCore from 'mongodb/lib/core/index';
+import dbClient from '../utils/db';
 
 const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
 class FilesController {
@@ -10,7 +10,7 @@ class FilesController {
   * A helper function used to create files and store data inside them locally
   * @return {string} returns the absolute path of the file saved locally
   */
-  static async createFile(data) {
+  static createFile(data) {
     const localPath = uuidv4();
     const dataDecoded = Buffer.from(data, 'base64');
     const fullPath = path.join(FOLDER_PATH, localPath);
@@ -64,7 +64,7 @@ class FilesController {
     }
 
     // Else, file needs to be stored locally, and then in the DB
-    const localpath = await FilesController.createFile(data);
+    const localpath = FilesController.createFile(data);
     const result = await dbClient.filesCollection.insertOne({
       userId: req.user._id,
       name,
@@ -73,7 +73,6 @@ class FilesController {
       parentId: parentId === '0' ? '0' : new mongoDBCore.BSON.ObjectId(parentId),
       localPath: localpath,
     });
-    console.log(result);
     return res.status(201).json({
       id: result.ops[0]._id.toString(),
       userId: req.user._id.toString(),

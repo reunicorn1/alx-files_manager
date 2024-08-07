@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { getUserBase, getUserX } from '../middlewares/authMiddleware.js';
-import AppController from '../controllers/AppController.js';
-import AuthController from '../controllers/AuthController.js';
-import UsersController from '../controllers/UsersController.js';
-import FilesController from '../controllers/FilesController.js';
+import { getUserBase, getUserX } from '../middlewares/authMiddleware';
+import AppController from '../controllers/AppController';
+import AuthController from '../controllers/AuthController';
+import UsersController from '../controllers/UsersController';
+import FilesController from '../controllers/FilesController';
 
 const router = Router();
 
