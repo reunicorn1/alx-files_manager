@@ -40,7 +40,7 @@ export const getUserX = async (req, res, next) => {
  */
 export const getUserBase = async (req, res, next) => {
   const base64 = req.headers.authorization;
-  if (!base64 || base64.split(' ').length !== 2 || base64.split(' ')[0] !== 'Base') {
+  if (!base64 || base64.split(' ').length !== 2 || base64.split(' ')[0] !== 'Basic') {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
@@ -48,7 +48,6 @@ export const getUserBase = async (req, res, next) => {
 
   // Get data stored in the decoded string
   const [email, password] = encypted.split(':');
-
   // Look for the user if exists
   const user = await dbClient.usersCollection.findOne({ email, password: sha1(password) });
   if (!user) {
