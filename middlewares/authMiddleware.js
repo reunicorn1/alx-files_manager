@@ -55,3 +55,17 @@ export const getUserBase = async (req, res, next) => {
   req.user = user;
   next();
 };
+
+export const getFile = async (req, res, next) => {
+  const { id } = req.params;
+  const file = await dbClient.filesCollection.findOne({
+    userId: req.user._id,
+    _id: new mongoDBCore.BSON.ObjectId(id),
+  });
+  if (!file) {
+    res.status(404).json({ error: 'Not found' });
+    return;
+  }
+  req.file = file;
+  next();
+};

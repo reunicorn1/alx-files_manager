@@ -4,9 +4,7 @@ import { tmpdir } from 'os';
 import { promisify } from 'util';
 import Queue from 'bull/lib/queue';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  mkdir, writeFile, stat, existsSync, realpath,
-} from 'fs';
+import { mkdir, writeFile } from 'fs';
 import { join as joinPath } from 'path';
 import { Request, Response } from 'express';
 import mongoDBCore from 'mongodb/lib/core';
