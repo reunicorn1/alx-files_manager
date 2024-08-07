@@ -22,7 +22,7 @@ router.route('/users')
   .post((req, res) => {
     UsersController.postNew(req, res);
   });
-// // POST /files => FilesController.postUpload
+// POST /files => FilesController.postUpload
 // router.route('/files').post((req, res) => {
 //   FilesController.postUpload(req, res);
 // });
