@@ -23,9 +23,9 @@ router.route('/users')
     UsersController.postNew(req, res);
   });
 // POST /files => FilesController.postUpload
-// router.route('/files').post((req, res) => {
-//   FilesController.postUpload(req, res);
-// });
+router.route('/files').post((req, res) => {
+  FilesController.postUpload(req, res);
+});
 // Middlware related routes
 // GET /connect => AuthController.getConnect
 router.get('/connect', getUserBase, AuthController.getConnect);
