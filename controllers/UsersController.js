@@ -29,7 +29,7 @@ class UsersController {
    */
   static async getMe(req, res) {
     // All checks necessary were made already in the middleware
-    return res.status(401).json({ id: req.user._id.toString(), email: req.user.email });
+    return res.status(200).json({ id: req.user._id.toString(), email: req.user.email });
   }
 }
 

@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import sha1 from 'sha1';
 import pkg from 'mongodb';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
@@ -48,10 +48,9 @@ export const getUserBase = async (req, res, next) => {
 
   // Get data stored in the decoded string
   const [email, password] = encypted.split(':');
-  const hashedpwd = crypto.createHash('sha1').update(password).digest('hex');
 
   // Look for the user if exists
-  const user = await dbClient.usersCollection.findOne({ email, password: hashedpwd });
+  const user = await dbClient.usersCollection.findOne({ email, password: sha1(password) });
   if (!user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
