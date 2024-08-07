@@ -1,3 +1,4 @@
+/* eslint-disable jest/require-hook */
 import express from 'express';
 import router from './routes/index';
 
