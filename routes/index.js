@@ -1,4 +1,3 @@
-/* eslint-disable jest/require-hook */
 import { Router } from 'express';
 import { getUserBase, getUserX } from '../middlewares/authMiddleware';
 import AppController from '../controllers/AppController';
