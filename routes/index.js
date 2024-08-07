@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getUserBase, getUserX } from '../middlewares/authMiddleware';
+import { getUserBase, getUserX, getFile } from '../middlewares/authMiddleware';
 import AppController from '../controllers/AppController';
 import AuthController from '../controllers/AuthController';
 import UsersController from '../controllers/UsersController';
@@ -8,7 +8,6 @@ import FilesController from '../controllers/FilesController';
 const router = Router();
 
 // GET /status => AppController.getStatus
-// eslint-disable-next-line jest/require-hook
 router.route('/status')
   .get((req, res) => {
     AppController.getStatus(req, res);
@@ -41,9 +40,15 @@ router.get('/disconnect', getUserX, AuthController.getDisconnect);
 router.get('/users/me', getUserX, UsersController.getMe);
 
 // GET /files/:id => FilesController.getShow
-router.get('/files/:id', getUserX, FilesController.getShow);
+router.get('/files/:id', getUserX, getFile, FilesController.getShow);
 
 // GET /files => FilesController.getIndex
 router.get('/files', getUserX, FilesController.getIndex);
+
+// PUT /files/:id/publish => FilesController.putPublish
+router.put('/files/:id/publish', getUserX, getFile, FilesController.putPublish);
+
+// PUT /files/:id/publish => FilesController.putUnpublish
+router.put('/files/:id/unpublish', getUserX, getFile, FilesController.putUnpublish);
 
 export default router;

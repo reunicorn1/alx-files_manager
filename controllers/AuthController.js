@@ -23,7 +23,7 @@ class AuthController {
     // Checks were made in the middleware about the user related to the token
 
     await redisClient.del(`auth_${req.token}`);
-    return res.status(204).end();
+    return res.status(204).send();
   }
 }
 

@@ -1,10 +1,9 @@
-import pkg from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import fs from 'node:fs';
+import mongoDBCore from 'mongodb/lib/core/index';
 import dbClient from '../utils/db';
 
-const { ObjectId } = pkg;
 const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
 class FilesController {
 /**
@@ -18,7 +17,6 @@ class FilesController {
 
     fs.mkdirSync(FOLDER_PATH, { recursive: true });
     fs.writeFileSync(fullPath, dataDecoded);
-    console.log('File written successfully at:', fullPath);
     return fullPath;
   }
 
@@ -38,8 +36,10 @@ class FilesController {
     if (type !== 'folder' && !data) return res.status(400).json({ error: 'Missing data' });
 
     // Since parentID has a value a check for the parent has to be conducted
-    if (parentId !== 0) {
-      const parentFile = await dbClient.filesCollection.findOne({ _id: new ObjectId(parentId) });
+    if (parentId !== '0') {
+      const parentFile = await dbClient.filesCollection.findOne({
+        _id: new mongoDBCore.BSON.ObjectId(parentId),
+      });
       if (!parentFile) return res.status(400).json({ error: 'Parent not found' });
       if (parentFile.type !== 'folder') return res.status(400).json({ error: 'Parent is not a folder' });
     }
@@ -47,46 +47,99 @@ class FilesController {
     // If the datatype was folder It will be stored directly in the DB
     if (type === 'folder') {
       const result = await dbClient.filesCollection.insertOne({
-        userId: req.user._id.toString(), name, type, parentId, isPublic,
+        userId: req.user._id,
+        name,
+        type,
+        parentId: parentId === '0' ? '0' : new mongoDBCore.BSON.ObjectId(parentId),
+        isPublic,
       });
-      const { ops: [{ _id, ...rest }] } = result;
-      return res.status(201).json({ id: _id, ...rest });
+      return res.status(201).json({
+        id: result.ops[0]._id.toString(),
+        userId: req.user._id.toString(),
+        name,
+        type,
+        isPublic,
+        parentId: parentId === '0' ? 0 : parentId.toString(),
+      });
     }
 
     // Else, file needs to be stored locally, and then in the DB
     const localpath = await FilesController.createFile(data);
     const result = await dbClient.filesCollection.insertOne({
-      userId: req.user._id.toString(), name, type, isPublic, parentId, localPath: localpath,
+      userId: req.user._id,
+      name,
+      type,
+      isPublic,
+      parentId: parentId === '0' ? '0' : new mongoDBCore.BSON.ObjectId(parentId),
+      localPath: localpath,
     });
-    const { ops: [{ _id, localPath, ...rest }] } = result;
-    return res.status(201).json({ id: _id, ...rest });
+    console.log(result);
+    return res.status(201).json({
+      id: result.ops[0]._id.toString(),
+      userId: req.user._id.toString(),
+      name,
+      type,
+      isPublic,
+      parentId: parentId === '0' ? 0 : parentId.toString(),
+    });
   }
 
   static async getShow(req, res) {
-    const { id } = req.params;
-    const file = await dbClient.filesCollection.findOne({
-      userId: req.user._id.toString(),
-      _id: new ObjectId(id),
+    const {
+      _id, userId, localPath, parentId, ...rest
+    } = req.file;
+    return res.status(200).json({
+      id: _id.toString(),
+      userId: userId.toString(),
+      parentId: parentId === '0' ? 0 : parentId.toString(),
+      ...rest,
     });
-    if (!file) return res.status(404).json({ error: 'Not found' });
-    const { _id, localPath, ...rest } = file;
-    return res.status(201).json({ id: _id, ...rest });
   }
 
   static async getIndex(req, res) {
     const pageSize = 10;
     const { parentId = '0', page = 0 } = req.query;
     const pipeline = [
-      { $match: { parentId, userId: req.user._id.toString() } },
+      { $match: { parentId: parentId === '0' ? '0' : new mongoDBCore.BSON.ObjectId(parentId), userId: req.user._id } },
+      { $sort: { _id: -1 } },
       { $skip: page * pageSize },
       { $limit: pageSize },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          userId: '$userId',
+          name: '$name',
+          type: '$type',
+          isPublic: '$isPublic',
+          parentId: {
+            $cond: { if: { $eq: ['$parentId', '0'] }, then: 0, else: '$parentId' },
+          },
+        },
+      },
     ];
-    dbClient.filesCollection.aggregate(pipeline).toArray((err, result) => {
+    await dbClient.filesCollection.aggregate(pipeline).toArray((err, result) => {
       if (err) console.log(err);
-      return res.status(201).json(result.map((r) => {
-        const { _id, localPath, ...rest } = r;
-        return { id: _id, ...rest };
-      }));
+      return res.status(200).json(result);
+    });
+  }
+
+  static async putPublish(req, res) {
+    const obj = await dbClient.filesCollection.findOneAndUpdate(req.file, { $set: { isPublic: true } }, { returnDocument: 'after' });
+    const { _id, localPath, ...rest } = obj.value;
+    return res.status(200).json({ id: _id, ...rest });
+  }
+
+  static async putUnpublish(req, res) {
+    const obj = await dbClient.filesCollection.findOneAndUpdate(req.file, { $set: { isPublic: false } }, { returnDocument: 'after' });
+    const {
+      _id, userId, localPath, parentId, ...rest
+    } = obj.value;
+    return res.status(200).json({
+      id: _id.toString(),
+      userId: userId.toString(),
+      parentId: parentId === '0' ? 0 : parentId.toString(),
+      ...rest,
     });
   }
 }
