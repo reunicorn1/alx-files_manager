@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import redisClient from '../utils/redis';
+import redisClient from '../utils/redis.js';
 
 /**
  * Class for handling authentication and autherization

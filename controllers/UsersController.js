@@ -1,5 +1,5 @@
 import sha1 from 'sha1';
-import dbClient from '../utils/db';
+import dbClient from '../utils/db.js';
 
 /**
  * Class for controlling basic operations related to the user

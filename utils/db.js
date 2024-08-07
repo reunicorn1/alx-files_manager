@@ -1,4 +1,4 @@
-import MongoClient from 'mongodb/lib/mongo_client';
+import MongoClient from 'mongodb/lib/mongo_client.js';
 
 const DB_HOST = process.env.DB_HOST || 'localhost';
 const DB_PORT = process.env.DB_PORT || 27017;

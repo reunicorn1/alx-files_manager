@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { getUserBase, getUserX } from '../middlewares/authMiddleware';
-import AppController from '../controllers/AppController';
-import AuthController from '../controllers/AuthController';
-import UsersController from '../controllers/UsersController';
-import FilesController from '../controllers/FilesController';
+import { getUserBase, getUserX } from '../middlewares/authMiddleware.js';
+import AppController from '../controllers/AppController.js';
+import AuthController from '../controllers/AuthController.js';
+import UsersController from '../controllers/UsersController.js';
+import FilesController from '../controllers/FilesController.js';
 
 const router = Router();
 
@@ -23,9 +23,8 @@ router.route('/users')
     UsersController.postNew(req, res);
   });
 // POST /files => FilesController.postUpload
-router.route('/files').post((req, res) => {
-  FilesController.postUpload(req, res);
-});
+router.post('/files', getUserX, FilesController.postUpload);
+
 // Middlware related routes
 // GET /connect => AuthController.getConnect
 router.get('/connect', getUserBase, AuthController.getConnect);

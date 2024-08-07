@@ -1,7 +1,7 @@
 import sha1 from 'sha1';
-import mongoDBCore from 'mongodb/lib/core/index';
-import dbClient from '../utils/db';
-import redisClient from '../utils/redis';
+import mongoDBCore from 'mongodb/lib/core/index.js';
+import dbClient from '../utils/db.js';
+import redisClient from '../utils/redis.js';
 
 /**
  * A middleware used to find associated user with the x-token
