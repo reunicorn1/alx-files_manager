@@ -39,6 +39,9 @@ router.put('/files/:id/publish', getUserX, getFile, FilesController.putPublish);
 // PUT /files/:id/publish => FilesController.putUnpublish
 router.put('/files/:id/unpublish', getUserX, getFile, FilesController.putUnpublish);
 
+// GET /files/:id/data => FilesController.getFile
+router.get('/files/:id/data', FilesController.getFile);
+
 // GET /connect => AuthController.getConnect
 router.get('/connect', getUserBase, AuthController.getConnect);
 // GET /disconnect => AuthController.getDisconnect

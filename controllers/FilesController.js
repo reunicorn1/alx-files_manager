@@ -1,14 +1,17 @@
 /* eslint-disable import/no-named-as-default */
 /* eslint-disable no-unused-vars */
-import { tmpdir } from 'os';
 import { promisify } from 'util';
 import Queue from 'bull/lib/queue';
 import { v4 as uuidv4 } from 'uuid';
-import { mkdir, writeFile } from 'fs';
+import {
+  mkdir, writeFile, stat, existsSync, realpath,
+} from 'fs';
+import { contentType } from 'mime-types';
 import { join as joinPath } from 'path';
 import { Request, Response } from 'express';
 import mongoDBCore from 'mongodb/lib/core';
 import dbClient from '../utils/db';
+import { getUser } from '../middlewares/authMiddleware';
 
 const VALID_FILE_TYPES = {
   folder: 'folder',
@@ -23,6 +26,8 @@ const { FOLDER_PATH } = process.env;
 
 const mkDirAsync = promisify(mkdir);
 const writeFileAsync = promisify(writeFile);
+const statAsync = promisify(stat);
+const realpathAsync = promisify(realpath);
 
 const fileQueue = new Queue('thumbnail generation');
 
@@ -231,5 +236,47 @@ export default class FilesController {
         : parentId.toString(),
       ...rest,
     });
+  }
+
+  /**
+   * Retrieves the content of a file.
+   * @param {Request} req The Express request object.
+   * @param {Response} res The Express response object.
+   */
+  static async getFile(req, res) {
+    const user = await getUser(req);
+    const { id } = req.params;
+    const size = req.query.size || null;
+    const userId = user ? user._id.toString() : '';
+    const fileFilter = {
+      _id: new mongoDBCore.BSON.ObjectId(isValidId(id) ? id : NULL_ID),
+    };
+    const file = await dbClient.filesCollection.findOne(fileFilter);
+
+    if (!file || (!file.isPublic && (file.userId.toString() !== userId))) {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+    if (file.type === VALID_FILE_TYPES.folder) {
+      res.status(400).json({ error: 'A folder doesn\'t have content' });
+      return;
+    }
+    let filePath = file.localPath;
+    if (size) {
+      filePath = `${file.localPath}_${size}`;
+    }
+    if (existsSync(filePath)) {
+      const fileInfo = await statAsync(filePath);
+      if (!fileInfo.isFile()) {
+        res.status(404).json({ error: 'Not found' });
+        return;
+      }
+    } else {
+      res.status(404).json({ error: 'Not found' });
+      return;
+    }
+    const absoluteFilePath = await realpathAsync(filePath);
+    res.setHeader('Content-Type', contentType(file.name) || 'text/plain; charset=utf-8');
+    res.status(200).sendFile(absoluteFilePath);
   }
 }

@@ -5,25 +5,33 @@ import redisClient from '../utils/redis';
 
 const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
 /**
- * A middleware used to find associated user with the x-token
- * @return {undefined} perfomes sideeffects by adding the user found to the req object
+ * A middleware helper function used to find associated user with the x-token
+ * @return {Object || null} either the object of the user found or null
  */
-export const getUserX = async (req, res, next) => {
+export const getUser = async (req) => {
   const token = req.headers['x-token'];
   if (!token) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
+    return null;
   }
   // Get the userid of user signed in the session using the token from redis
   const userid = await redisClient.get(`auth_${token}`);
   if (!userid) {
-    res.status(401).json({ error: 'Unauthorized' });
-    return;
+    return null;
   }
   // Get the user linked to this userid
   const user = await dbClient.usersCollection.findOne({
     _id: new mongoDBCore.BSON.ObjectId(userid),
   });
+  return user || null;
+};
+
+/**
+ * A middleware used to find associated user with the x-token
+ * @return {undefined} perfomes sideeffects by adding the user found to the req object
+ */
+export const getUserX = async (req, res, next) => {
+  const token = req.headers['x-token'];
+  const user = await getUser(req);
   if (!user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
@@ -32,6 +40,7 @@ export const getUserX = async (req, res, next) => {
   req.user = user;
   next();
 };
+
 /**
  * A middleware used to find associated user with the base authorization key
  * @return {undefined} perfomes sideeffects by adding the user found to the req object
