@@ -165,12 +165,9 @@ export default class FilesController {
    */
   static async getIndex(req, res) {
     const { parentId = ROOT_FOLDER_ID.toString(), page = 0 } = req.query;
-    const newpage = /\d+/.test((page || '').toString())
-      ? Number.parseInt(page, 10)
-      : 0;
     const pipeline = [
       { $match: { parentId: parentId === '0' ? '0' : new mongoDBCore.BSON.ObjectId(parentId), userId: req.user._id } },
-      { $skip: newpage * MAX_FILES_PER_PAGE },
+      { $skip: page * MAX_FILES_PER_PAGE },
       { $limit: MAX_FILES_PER_PAGE },
       {
         $project: {
