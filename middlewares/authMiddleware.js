@@ -3,7 +3,7 @@ import mongoDBCore from 'mongodb/lib/core/index';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
-// const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
+const NULL_ID = Buffer.alloc(24, '0').toString('utf-8');
 /**
  * A middleware used to find associated user with the x-token
  * @return {undefined} perfomes sideeffects by adding the user found to the req object
@@ -58,9 +58,9 @@ export const getUserBase = async (req, res, next) => {
 };
 
 export const getFile = async (req, res, next) => {
-  const { id } = req.params;
+  const { id = NULL_ID } = req.params;
   const file = await dbClient.filesCollection.findOne({
-    userId: req.user._id,
+    userId: req.user._id ? req.user._id : NULL_ID,
     _id: new mongoDBCore.BSON.ObjectId(id),
   });
   if (!file) {

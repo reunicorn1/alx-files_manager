@@ -195,46 +195,41 @@ export default class FilesController {
    * @param {Response} res The Express response object.
    */
   static async putPublish(req, res) {
-    const { user, file } = req;
-    const { id } = req.params;
-    const userId = user._id.toString();
-    const fileFilter = {
-      _id: new mongoDBCore.BSON.ObjectId(isValidId(id) ? id : NULL_ID),
-      userId: new mongoDBCore.BSON.ObjectId(isValidId(userId) ? userId : NULL_ID),
-    };
-    await (await dbClient.filesCollection())
-      .updateOne(fileFilter, { $set: { isPublic: true } });
-    res.status(200).json({
-      id,
-      userId,
-      name: file.name,
-      type: file.type,
-      isPublic: true,
-      parentId: file.parentId === ROOT_FOLDER_ID.toString()
+    const obj = await dbClient.filesCollection.findOneAndUpdate(req.file, {
+      $set: { isPublic: true },
+    }, { returnDocument: 'after' });
+    const {
+      userId, _id, localPath, parentId, ...rest
+    } = obj.value;
+    return res.status(200).json({
+      id: _id.toString(),
+      userId: userId.toString(),
+      parentId: parentId === ROOT_FOLDER_ID.toString()
         ? 0
-        : file.parentId.toString(),
+        : parentId.toString(),
+      ...rest,
     });
   }
 
+  /**
+   * Sets the attribute isPublic to false.
+   * @param {Request} req The Express request object.
+   * @param {Response} res The Express response object.
+   */
   static async putUnpublish(req, res) {
-    const { user, file } = req;
-    const { id } = req.params;
-    const userId = user._id.toString();
-    const fileFilter = {
-      _id: new mongoDBCore.BSON.ObjectId(isValidId(id) ? id : NULL_ID),
-      userId: new mongoDBCore.BSON.ObjectId(isValidId(userId) ? userId : NULL_ID),
-    };
-    await (await dbClient.filesCollection())
-      .updateOne(fileFilter, { $set: { isPublic: false } });
-    res.status(200).json({
-      id,
-      userId,
-      name: file.name,
-      type: file.type,
-      isPublic: false,
-      parentId: file.parentId === ROOT_FOLDER_ID.toString()
+    const obj = await dbClient.filesCollection.findOneAndUpdate(req.file, {
+      $set: { isPublic: false },
+    }, { returnDocument: 'after' });
+    const {
+      userId, _id, localPath, parentId, ...rest
+    } = obj.value;
+    return res.status(200).json({
+      id: _id.toString(),
+      userId: userId.toString(),
+      parentId: parentId === ROOT_FOLDER_ID.toString()
         ? 0
-        : file.parentId.toString(),
+        : parentId.toString(),
+      ...rest,
     });
   }
 }
