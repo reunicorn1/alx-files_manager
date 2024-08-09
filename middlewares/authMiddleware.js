@@ -55,7 +55,10 @@ export const getUserBase = async (req, res, next) => {
 
   // Get data stored in the decoded string
   const [email, password] = encypted.split(':');
-
+  if (!email || !password) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
   // Look for the user if exists
   const user = await dbClient.usersCollection.findOne({ email, password: sha1(password) });
   if (!user) {
